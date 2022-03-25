@@ -1,0 +1,146 @@
+/*
+Course:         SENG2250, Assignment 1 
+Program:        Diffie-Hellman Key Exchange and MITM Attack
+Name:           Thomas Miller
+Student Number: C3279309
+Date Due:       26th Aug 2018
+*/
+
+/* Program Information */
+
+{
+	help() =
+		print("Diffie-Hellman Key Exchange and MITM Attack");
+		print;
+		print("Command List:");
+		print("- setP(P)        : set the prime number 'P'");
+		print("- setGen(g)      : set the primitive element (generator) 'g' of Z*p");
+		print("- setKeyA(key)   : set Alice's private key 'xa'");
+		print("- setKeyB(key)   : set Bob's private key 'xb'");
+		print("- setKeyE(key)   : set Eve's (Adversary) private key 'xe'");
+		print("- commonKeyA()   : find the public key 'Ya' using Alice's private key");
+		print("- commonKeyB()   : find the public key 'Yb' using Bob's private key");
+		print("- testKeys()     : compare session keys kab == kba");
+		print("- mitmAttack()   : execute Man-in-the-Middle (MITM) Attack");
+		print;
+		print("Automatic Generation:");
+		print("- genP(n)        : generate prime number P of size n bits and generator 'g'");
+		print;
+}
+
+/* Variables Setting */
+P = 0;
+g = 0;
+help();
+xa = xb = xe = 0;
+Ya = Yb = Ye = 0;
+kab = kba = 0;
+
+/* Setting a new prime number 'P' */
+{
+	setP(myP) =
+		if (isprime(myP),
+			print("Common prime 'P': ", P = myP),
+			print("Sorry, P must be a prime number!"));
+}
+
+/* Setting a new primitive element 'g' */
+{
+	setGen(myGen) =
+		if (myGen^((P-1)/2) % P == P-1,
+			print("Primitive element (generator) 'g' of Z*p: ", g = myGen),
+			print("Sorry, g must be a primitive element!"));
+}
+
+/* Setting a key for Alice */
+{
+	setKeyA(myKey) =
+	    print("\nAlice:");
+	    xa = myKey;
+	    Ya = g^xa % P;
+		print("Private key 'xa'= ", xa);
+		print("Public key 'Ya' = Ya = g^xa % p"); 
+		print("                     = (" g, "^", xa, ") % ", P);
+		print("                     = ", Ya);
+}
+
+/* Setting a key for Bob */
+{
+	setKeyB(myKey) =
+		print("\nBob:");
+		xb = myKey;
+	    Yb = g^xb % P;
+		print("Private key 'xb'= ", xb);
+		print("Public key 'Yb' = Yb = g^xb % p"); 
+		print("                     = (" g, "^", xb, ") % ", P);
+		print("                     = ", Yb);
+}
+
+/* Setting a key for Eve */
+{
+	setKeyE(myKey) =
+		print("\nEve (Adversary):");
+		xe = myKey;
+	    Ye = g^xe % P;
+		print("Private key 'xe'= ", xe);
+		print("Public key 'Ye' = Ye = g^xe % p"); 
+		print("                     = (" g, "^", xe, ") % ", P);
+		print("                     = ", Ye);
+}
+
+/* Print the common key */
+{
+	commonKeyA() =
+	    print("\nCommon key from Alice:");
+	    kab = Yb^xa % P;
+		print("Kab = Yb^xa % P");
+		print("    = (", Yb, "^", xa, ") % ", P);
+		print("    = ", kab);
+}
+
+{
+	commonKeyB() =
+	    kba = Ya^xb % P;
+		print("\nCommon key from Bob:");
+		print("Kba = Ya^xb % P");
+		print("    = (", Ya, "^", xb, ") % ", P);
+		print("    = ", kba);
+}
+
+/* Compare session keys kab with kba */
+{
+    testKeys() = 
+    print("\nTesting session keys (kab == kba)...");
+    print("kab = ", kab, ", kba = ", kba);
+        if(kab == kba,
+            print("kab == kba"),
+            print("kab != kba, detected MITM attack or entered keys incorrectly"));
+}
+
+/* Man-in-the-Middle (MITM) Attack, modify kab and kba */
+{
+	mitmAttack() =
+		print("\nModifying session keys...");
+		kab = Ye^xa % P;
+		kba = Ye^xb % P;
+		print("Kab = Ye^xa % P");
+		print("    = ", Ye, "^", xa, " % ", P);
+		print("    = ", kab);
+		print("Kba = Ye^xb % P");
+		print("    = ", Ye, "^", xb, " % ", P);
+		print("    = ", kba);
+}
+
+/* Automatic generation of P */
+{
+	genP(n) =
+	    print("\nAutomatic generation of P:");
+		P = 1;
+		while(log(P) / log(2) < n,
+			P = nextprime(random(2^ceil(n+1))));
+		print("Common prime 'P': ", P);
+		g1 = znprimroot(P);
+		g = Pol(lift(g1));
+		print("Primitive element (generator) 'g' of Z*p: ", g);
+		print("Note: don't forget to set these manually with setP() and setGen()");
+}
